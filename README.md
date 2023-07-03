@@ -7,8 +7,8 @@ Works with Chrome and Chromium-based browsers (such as Edge and Brave)!
 Just double-tap on that sweet index.html and watch it work its magic!
 
 **Features**
-- A modern, green-themed file table!
-- Determines runtime and last date modified and lists with file name!
+- Generates a modern, green-themed video file list!
+- Determines runtime and last date modified!
 - Renames file names based on several incredible options:
   - Disable File Extensions (like .mp4)
   - Disable Resolutions (like 1080p)
