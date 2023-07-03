@@ -35,20 +35,6 @@ tr:nth-child(even) {
   background-color: #eaf7ed; /* Light green background color for even rows */
 }
 
-.flat-button {
-  background-color: #a8e6c1; /* Light green background color for buttons */
-  color: #333;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  transition: background-color 0.3s;
-}
-
-.flat-button:hover {
-  background-color: #86cda9; /* Darker green background color on hover for buttons */
-}
-
 .green-highlight {
   background-color: #c5edcc; /* Light green background color for highlighted rows */
   color: #333;
