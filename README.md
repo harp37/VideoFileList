@@ -13,7 +13,7 @@ Just double-tap on that sweet index.html and watch it work its magic!
   - Disable File Extensions (like .mp4)
   - Disable Resolutions (like 1080p)
   - Replace Dots with Spaces ("I.hate.dots!" becomes "I hate dots!")
-  - Curtail Long Filenames ("This is the longest title that I could think of at this moment in time!" becomes "This is the longest title that I could think of at this moment in t..."
+  - Curtail Long Titles ("This is the longest title that I could think of at this moment in time!" becomes "This is the longest title that I could think of at this moment in t..."
 - Export the list in a wide range of exciting formats:
   - Document (PDF)
   - Image (PNG)
