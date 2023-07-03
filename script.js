@@ -325,7 +325,7 @@ function toggleDisableExtensions() {
 }
 
 function removeResolutionsFromFileName(fileName) {
-  const resolutions = ['4k', '2160p', '1080p', '720p', '480p', '480p-1080p'];
+  const resolutions = ['4k', '2160p', '1080p', '720p', '480p', '480p-1080p', '8k', ' UHD' ' HD'];
   resolutions.forEach(resolution => {
     fileName = fileName.replace(new RegExp(resolution, 'gi'), '');
   });
@@ -333,7 +333,7 @@ function removeResolutionsFromFileName(fileName) {
 }
 
 function removeExtensionsFromFileName(fileName) {
-  const extensions = ['.mp4', '.wmv', '.mov', '.mp4', '.mpeg', '.f4v', '.mkv'];
+  const extensions = ['.mp4', '.wmv', '.mkv', '.mov', '.mpeg', '.mpg', '.webm', '.ogv', '.f4v', '.flv', '.avi', '.m4p', '.MTS', '.M2TS', '.TS', '.m4v'];
   extensions.forEach(extension => {
     fileName = fileName.replace(new RegExp(extension, 'gi'), '');
   });
