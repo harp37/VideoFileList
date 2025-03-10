@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video File List Generator</title>
+  
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5fff7;
+      color: #333;
+      line-height: 1.6;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: #2e7d32;
+      text-align: center;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #a8e6c1;
+      padding-bottom: 10px;
+    }
+
+    .control-panel {
+      background-color: #e8f5e9;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .file-input-container {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+      width: 100%;
+    }
+
+    .custom-file-input {
+      position: relative;
+      display: inline-block;
+    }
+
+    .custom-file-input input[type="file"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .custom-file-input label {
+      background-color: #4caf50;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      display: inline-block;
+    }
+
+    .custom-file-input:hover label {
+      background-color: #388e3c;
+    }
+
+    .file-count {
+      margin-left: 10px;
+      color: #555;
+    }
+
+    button {
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background-color: #388e3c;
+    }
+
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 10px;
+    }
+
+    .checkbox-container {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .checkbox-container input[type="checkbox"] {
+      margin-right: 5px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    thead {
+      background-color: #2e7d32;
+      color: white;
+    }
+
+    th {
+      padding: 12px 15px;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    tr:nth-child(even) {
+      background-color: #eaf7ed;
+    }
+
+    tr:hover {
+      background-color: #c5edcc;
+    }
+
+    .green-highlight {
+      background-color: #c5edcc;
+      color: #333;
+    }
+
+    .export-buttons {
+      display: none;
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .file-list-generated .export-buttons {
+      display: flex;
+    }
+
+    .export-button {
+      background-color: #3f51b5;
+      padding: 10px 15px;
+      margin: 0;
+    }
+
+    .export-button:hover {
+      background-color: #303f9f;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      font-style: italic;
+      color: #666;
+    }
+
+    @media (max-width: 768px) {
+      .control-panel {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .checkbox-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Video File List Generator</h1>
+
+  <div class="control-panel">
+    <div class="file-input-container">
+      <div class="custom-file-input">
+        <input type="file" id="fileInput" multiple accept="video/*">
+        <label for="fileInput">Select Video Files</label>
+      </div>
+      <span class="file-count" id="fileCount">No files selected</span>
+      <button id="generateButton" onclick="handleGenerateList()" disabled>Generate List</button>
+    </div>
+    
+    <div class="checkbox-group">
+      <label class="checkbox-container">
+        <input type="checkbox" id="disableExtensionsCheckbox" onchange="toggleDisableExtensions()">
+        Hide File Extensions
+      </label>
+      <label class="checkbox-container">
+        <input type="checkbox" id="disableResolutionsCheckbox" onchange="toggleDisableResolutions()">
+        Hide Resolutions
+      </label>
+      <label class="checkbox-container">
+        <input type="checkbox" id="replaceDotsCheckbox" onchange="toggleReplaceDots()">
+        Replace Dots with Spaces
+      </label>
+      <label class="checkbox-container">
+        <input type="checkbox" id="curtailLongTitlesCheckbox" onchange="toggleCurtailLongTitles()">
+        Limit Long Titles
+      </label>
+    </div>
+  </div>
+
+  <div id="fileList"></div>
+
+  <script>
+    // Global variables
+    let fileList = [];
+    let disableResolutions = false;
+    let disableExtensions = false;
+    let replaceDots = false;
+    let curtailLongTitles = false;
+
+    // Initialize when the document is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      // Add event listener for file input
+      const fileInput = document.getElementById('fileInput');
+      fileInput.addEventListener('change', updateFileCount);
+      
+      // Update UI for initial state
+      updateFileCount();
+    });
+
+    // Update file count display and generate button status
+    function updateFileCount() {
+      const fileInput = document.getElementById('fileInput');
+      const fileCountElement = document.getElementById('fileCount');
+      const generateButton = document.getElementById('generateButton');
+      
+      if (fileInput.files.length === 0) {
+        fileCountElement.textContent = 'No files selected';
+        generateButton.disabled = true;
+      } else {
+        fileCountElement.textContent = `${fileInput.files.length} file(s) selected`;
+        generateButton.disabled = false;
+      }
+    }
+
+    // Handle generate list button click
+    function handleGenerateList() {
+      const fileInput = document.getElementById('fileInput');
+      if (fileInput.files.length === 0) {
+        alert('Please select one or more files.');
+        return;
+      }
+
+      const fileListDiv = document.getElementById('fileList');
+      fileListDiv.innerHTML = '<div class="loading">Processing files, please wait...</div>';
+      
+      // Use setTimeout to allow the "processing" message to display
+      setTimeout(() => {
+        fileList = Array.from(fileInput.files);
+        fileListDiv.classList.add('file-list-generated');
+        createFileList();
+      }, 10);
+    }
+
+    // Create the file list table
+    function createFileList() {
+      const fileListDiv = document.getElementById('fileList');
+      fileListDiv.innerHTML = ''; // Clear previous file list
+
+      const table = document.createElement('table');
+      const tableHead = document.createElement('thead');
+      const tableBody = document.createElement('tbody');
+      const headerRow = document.createElement('tr');
+
+      const headers = ['File Name', 'Runtime', 'Bitrate (Mbps)', 'Date Modified'];
+      headers.forEach(headerText => {
+        const headerCell = document.createElement('th');
+        headerCell.textContent = headerText;
+        headerRow.appendChild(headerCell);
+      });
+
+      tableHead.appendChild(headerRow);
+      table.appendChild(tableHead);
+      table.appendChild(tableBody);
+      fileListDiv.appendChild(table);
+
+      let processedCount = 0;
+      const totalFiles = fileList.length;
+      
+      // Add a loading indicator row
+      const loadingRow = document.createElement('tr');
+      const loadingCell = document.createElement('td');
+      loadingCell.colSpan = 4;
+      loadingCell.textContent = 'Processing video metadata...';
+      loadingCell.style.textAlign = 'center';
+      loadingCell.style.fontStyle = 'italic';
+      loadingRow.appendChild(loadingCell);
+      tableBody.appendChild(loadingRow);
+
+      fileList.forEach((file, index) => {
+        const fileRow = document.createElement('tr');
+        const fileNameCell = document.createElement('td');
+        let fileName = file.name;
+
+        if (disableResolutions) {
+          fileName = removeResolutionsFromFileName(fileName);
+        }
+
+        if (disableExtensions) {
+          fileName = removeExtensionsFromFileName(fileName);
+        }
+
+        if (replaceDots) {
+          fileName = replaceDotsWithSpaces(fileName);
+        }
+
+        if (curtailLongTitles) {
+          fileName = curtailFileName(fileName);
+        }
+
+        fileNameCell.textContent = fileName;
+        const runtimeCell = document.createElement('td');
+        const bitrateCell = document.createElement('td');
+        const modifiedDateCell = document.createElement('td');
+        
+        // Set initial values
+        runtimeCell.textContent = 'Loading...';
+        bitrateCell.textContent = 'Loading...';
+        modifiedDateCell.textContent = formatDate(file.lastModified);
+
+        fileRow.appendChild(fileNameCell);
+        fileRow.appendChild(runtimeCell);
+        fileRow.appendChild(bitrateCell);
+        fileRow.appendChild(modifiedDateCell);
+        tableBody.appendChild(fileRow);
+        
+        // Process video metadata asynchronously
+        getVideoMetadata(file, runtimeCell, bitrateCell).then(() => {
+          processedCount++;
+          if (processedCount === totalFiles) {
+            // Remove loading row when all files are processed
+            if (tableBody.contains(loadingRow)) {
+              tableBody.removeChild(loadingRow);
+            }
+            // Add export buttons after all files are processed
+            addExportButtons();
+          }
+        });
+      });
+    }
+
+    // Add export buttons
+    function addExportButtons() {
+      const fileListDiv = document.getElementById('fileList');
+
+      // Remove existing export buttons if any
+      const existingExportButtonsDiv = document.getElementById('exportButtonsDiv');
+      if (existingExportButtonsDiv) {
+        fileListDiv.removeChild(existingExportButtonsDiv);
+      }
+
+      // Create a div to hold the export buttons
+      const exportButtonsDiv = document.createElement('div');
+      exportButtonsDiv.id = 'exportButtonsDiv';
+      exportButtonsDiv.className = 'export-buttons';
+
+      // Create the export buttons
+      const buttons = [
+        { id: 'exportPDF', text: 'Export to PDF', icon: '📄', handler: exportToPDF },
+        { id: 'exportPNG', text: 'Export to PNG', icon: '🖼️', handler: exportToPNG },
+        { id: 'exportText', text: 'Export to Text', icon: '📝', handler: exportToPlainText },
+        { id: 'exportExcel', text: 'Export to Excel', icon: '📊', handler: exportToExcel }
+      ];
+      
+      buttons.forEach(btn => {
+        const button = document.createElement('button');
+        button.id = btn.id;
+        button.className = 'export-button';
+        button.innerHTML = `${btn.icon} ${btn.text}`;
+        button.addEventListener('click', btn.handler);
+        exportButtonsDiv.appendChild(button);
+      });
+
+      // Append the export buttons to the file list div
+      fileListDiv.appendChild(exportButtonsDiv);
+    }
+
+    // Get video metadata (runtime and bitrate)
+    function getVideoMetadata(file, runtimeCell, bitrateCell) {
+      return new Promise((resolve) => {
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        
+        // Handle errors (file might not be a valid video)
+        video.onerror = function() {
+          runtimeCell.textContent = 'N/A';
+          bitrateCell.textContent = 'N/A';
+          resolve();
+        };
+        
+        video.onloadedmetadata = function() {
+          const seconds = video.duration;
+          
+          // Handle invalid duration (NaN or Infinity)
+          if (!isFinite(seconds) || isNaN(seconds)) {
+            runtimeCell.textContent = 'N/A';
+            bitrateCell.textContent = 'N/A';
+            resolve();
+            return;
+          }
+          
+          const hours = Math.floor(seconds / 3600);
+          const minutes = Math.floor((seconds % 3600) / 60);
+          const formattedSeconds = Math.floor(seconds % 60);
+
+          const runtime = `${pad(hours, 2)}:${pad(minutes, 2)}:${pad(formattedSeconds, 2)}`;
+
+          const bitrate = calculateBitrate(file, seconds);
+
+          runtimeCell.textContent = runtime;
+          bitrateCell.textContent = bitrate;
+          resolve();
+        };
+        
+        // Set a timeout in case metadata loading takes too long
+        setTimeout(() => {
+          if (runtimeCell.textContent === 'Loading...') {
+            runtimeCell.textContent = 'N/A';
+            bitrateCell.textContent = 'N/A';
+            resolve();
+          }
+        }, 5000);
+        
+        video.src = URL.createObjectURL(file);
+      });
+    }
+
+    // Calculate bitrate based on file size and duration
+    function calculateBitrate(file, duration) {
+      if (!duration || duration <= 0) return 'N/A';
+      
+      const fileSize = file.size;
+      const bits = fileSize * 8;
+      const megabits = bits / (1024 * 1024);
+      const bitrate = megabits / duration;
+      return bitrate.toFixed(2);
+    }
+
+    // Format date from timestamp
+    function formatDate(timestamp) {
+      const date = new Date(timestamp);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    // Export to PDF
+    function exportToPDF() {
+      const table = document.querySelector('table');
+      const fileListDiv = document.getElementById('fileList');
+
+      // Create a printable version with styling
+      const printContent = `
+        <html>
+        <head>
+          <title>Video File List</title>
+          <style>
+            body {
+              font-family: 'Segoe UI', Arial, sans-serif;
+              margin: 0;
+              padding: 20px;
+              font-size: 12px;
+            }
+            h1 {
+              color: #2e7d32;
+              text-align: center;
+              margin-bottom: 20px;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+            }
+            th {
+              background-color: #2e7d32;
+              color: white;
+              padding: 8px;
+              text-align: left;
+            }
+            td {
+              padding: 8px;
+              border-bottom: 1px solid #ddd;
+            }
+            tr:nth-child(even) {
+              background-color: #eaf7ed;
+            }
+            .footer {
+              margin-top: 20px;
+              text-align: center;
+              font-style: italic;
+              color: #666;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>Video File List</h1>
+          ${table.outerHTML}
+          <div class="footer">
+            Generated on ${new Date().toLocaleDateString()}
+          </div>
+        </body>
+        </html>
+      `;
+
+      // Create a hidden iframe for printing
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+      
+      // Write content to iframe and print
+      const iframeDoc = iframe.contentWindow.document;
+      iframeDoc.open();
+      iframeDoc.write(printContent);
+      iframeDoc.close();
+      
+      setTimeout(() => {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+        document.body.removeChild(iframe);
+      }, 500);
+    }
+
+    // Export to PNG
+    function exportToPNG() {
+      alert("PNG export requires the html2canvas library. For this simplified version, please use PDF export or another option.");
+    }
+
+    // Export to plain text
+    function exportToPlainText() {
+      const table = document.querySelector('table');
+      const rows = Array.from(table.querySelectorAll('tr'));
+      
+      let plainTextContent = '';
+      
+      // Process each row
+      rows.forEach(row => {
+        // Handle header row
+        const headerCells = row.querySelectorAll('th');
+        const dataCells = row.querySelectorAll('td');
+        
+        // If this is a header row
+        if (headerCells.length > 0) {
+          plainTextContent += '| ';
+          headerCells.forEach((cell, index) => {
+            plainTextContent += cell.textContent;
+            if (index !== headerCells.length - 1) {
+              plainTextContent += ' | ';
+            }
+          });
+          plainTextContent += ' |\n';
+          
+          // Add separator line
+          plainTextContent += '| ';
+          headerCells.forEach((_, index) => {
+            plainTextContent += '------';
+            if (index !== headerCells.length - 1) {
+              plainTextContent += ' | ';
+            }
+          });
+          plainTextContent += ' |\n';
+        } 
+        // If this is a data row
+        else if (dataCells.length > 0) {
+          plainTextContent += '| ';
+          dataCells.forEach((cell, index) => {
+            plainTextContent += cell.textContent;
+            if (index !== dataCells.length - 1) {
+              plainTextContent += ' | ';
+            }
+          });
+          plainTextContent += ' |\n';
+        }
+      });
+
+      downloadFile(plainTextContent, 'video_file_list.txt', 'text/plain');
+    }
+
+    // Export to Excel (CSV)
+    function exportToExcel() {
+      const table = document.querySelector('table');
+      const rows = Array.from(table.querySelectorAll('tr'));
+      
+      let csvContent = '';
+      
+      // Process each row
+      rows.forEach(row => {
+        const headerCells = row.querySelectorAll('th');
+        const dataCells = row.querySelectorAll('td');
+        
+        // Get all cells (header or data)
+        const cells = headerCells.length > 0 ? headerCells : dataCells;
+        
+        const rowContent = Array.from(cells).map(cell => {
+          // Escape quotes and wrap in quotes if contains comma
+          let content = cell.textContent;
+          if (content.includes('"')) {
+            content = content.replace(/"/g, '""');
+          }
+          if (content.includes(',')) {
+            content = `"${content}"`;
+          }
+          return content;
+        }).join(',');
+        
+        csvContent += rowContent + '\n';
+      });
+
+      downloadFile(csvContent, 'video_file_list.csv', 'text/csv');
+    }
+
+    // Helper function to download a file
+    function downloadFile(content, fileName, mimeType) {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 100);
+    }
+
+    // Toggle functionality for options
+    function toggleDisableResolutions() {
+      disableResolutions = !disableResolutions;
+      createFileList();
+    }
+
+    function toggleDisableExtensions() {
+      disableExtensions = !disableExtensions;
+      createFileList();
+    }
+
+    function toggleReplaceDots() {
+      replaceDots = !replaceDots;
+      createFileList();
+    }
+
+    function toggleCurtailLongTitles() {
+      curtailLongTitles = !curtailLongTitles;
+      createFileList();
+    }
+
+    // Utility functions for file name processing
+    function removeResolutionsFromFileName(fileName) {
+      const resolutions = ['4k', '2160p', '1080p', '720p', '480p', '480p-1080p', '8k', 'UHD', 'HD'];
+      resolutions.forEach(resolution => {
+        // Handle cases with spaces before/after and with/without brackets
+        fileName = fileName.replace(new RegExp(`\\s*\\(?${resolution}\\)?\\s*`, 'gi'), ' ');
+      });
+      return fileName.trim();
+    }
+
+    function removeExtensionsFromFileName(fileName) {
+      const extensions = ['.mp4', '.wmv', '.mkv', '.mov', '.mpeg', '.mpg', '.webm', '.ogv', '.f4v', '.flv', '.avi', '.m4p', '.MTS', '.M2TS', '.TS', '.m4v'];
+      extensions.forEach(extension => {
+        fileName = fileName.replace(new RegExp(extension + '$', 'gi'), '');
+      });
+      return fileName.trim();
+    }
+
+    function replaceDotsWithSpaces(fileName) {
+      return fileName.replace(/\.+/g, ' ');
+    }
+
+    function curtailFileName(fileName) {
+      const maxCharacters = 90;
+      if (fileName.length > maxCharacters) {
+        fileName = fileName.substring(0, maxCharacters - 3) + '...';
+      }
+      return fileName;
+    }
+
+    // Helper function to pad numbers with leading zeros
+    function pad(num, size) {
+      let padded = String(num);
+      while (padded.length < size) {
+        padded = '0' + padded;
+      }
+      return padded;
+    }
+  </script>
+</body>
+</html>
