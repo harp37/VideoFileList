@@ -15,20 +15,18 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-      background-color: #f9fafb; /* Subtle green-tinted background */
+      background-color: #f9fafb;
       color: #1a1a1a;
       line-height: 1.5;
       padding: 40px 20px;
       min-height: 100vh;
     }
 
-    /* Container for the entire app */
     .app-container {
       max-width: 1200px;
       margin: 0 auto;
     }
 
-    /* Arc-style header with green accents */
     .app-header {
       text-align: center;
       margin-bottom: 48px;
@@ -43,19 +41,18 @@
     }
 
     .app-subtitle {
-      color: #4b5563; /* Slightly warmer gray for green theme */
+      color: #4b5563;
       font-size: 16px;
       font-weight: 400;
     }
 
-    /* Arc-style card design for controls */
     .control-card {
       background: #ffffff;
       border-radius: 12px;
       padding: 24px;
       margin-bottom: 24px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      border: 1px solid #e5e7eb; /* Subtle border */
+      border: 1px solid #e5e7eb;
     }
 
     .file-input-section {
@@ -65,13 +62,12 @@
     .section-title {
       font-size: 14px;
       font-weight: 500;
-      color: #374151; /* Darker gray for better contrast */
+      color: #374151;
       margin-bottom: 12px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
-    /* Arc-style file input buttons with green theme */
     .file-inputs {
       display: flex;
       gap: 12px;
@@ -105,27 +101,24 @@
       border: 1px solid transparent;
     }
 
-    /* Files button - Primary green */
     .file-button label {
-      background-color: #059669; /* Sophisticated sage green */
+      background-color: #059669;
       color: white;
     }
 
     .file-button:hover label {
-      background-color: #047857; /* Slightly deeper on hover */
+      background-color: #047857;
     }
 
-    /* Folders button - Complementary green tone */
     .folder-button label {
-      background-color: #10b981; /* Slightly brighter variant */
+      background-color: #10b981;
       color: white;
     }
 
     .folder-button:hover label {
-      background-color: #059669; /* Deepens to primary color */
+      background-color: #059669;
     }
 
-    /* Status and action buttons section */
     .status-actions {
       display: flex;
       align-items: center;
@@ -138,7 +131,6 @@
       font-size: 15px;
     }
 
-    /* Arc-style buttons with green theme */
     .btn {
       padding: 10px 20px;
       border-radius: 8px;
@@ -168,7 +160,7 @@
     }
 
     .btn-secondary {
-      background-color: #f3f4f6; /* Slightly warm background */
+      background-color: #f3f4f6;
       color: #374151;
       border: 1px solid #d1d5db;
     }
@@ -177,7 +169,6 @@
       background-color: #e5e7eb;
     }
 
-    /* Options toggles */
     .options-section {
       border-top: 1px solid #e5e7eb;
       padding-top: 24px;
@@ -200,7 +191,7 @@
     .option-toggle input[type="checkbox"] {
       width: 20px;
       height: 20px;
-      accent-color: #059669; /* Checkbox color matches theme */
+      accent-color: #059669;
       cursor: pointer;
     }
 
@@ -210,7 +201,6 @@
       cursor: pointer;
     }
 
-    /* File list container */
     .file-list-container {
       background: #ffffff;
       border-radius: 12px;
@@ -219,7 +209,6 @@
       border: 1px solid #e5e7eb;
     }
 
-    /* Table styling with green accents */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -227,7 +216,7 @@
     }
 
     thead {
-      background-color: #f9fafb; /* Very subtle green tint */
+      background-color: #f9fafb;
       border-bottom: 1px solid #e5e7eb;
     }
 
@@ -251,21 +240,33 @@
     }
 
     tr:nth-child(even) {
-      background-color: #f9fafb; /* Subtle striping */
+      background-color: #f9fafb;
     }
 
     tr:hover {
-      background-color: #f0fdf4; /* Light green tint on hover */
+      background-color: #f0fdf4;
     }
 
-    /* Folder header rows with green theme */
+    /* Make video rows clickable */
+    tbody tr {
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    tbody tr:not(.folder-header):hover {
+      background-color: #f0fdf4 !important;
+      transform: translateY(-1px);
+    }
+
     .folder-header {
       background-color: #059669 !important;
       color: white !important;
+      cursor: default !important;
     }
 
     .folder-header:hover {
       background-color: #047857 !important;
+      transform: none !important;
     }
 
     .folder-header td {
@@ -273,7 +274,106 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    /* Export buttons container */
+    /* Selected row styling */
+    tbody tr.selected:not(.folder-header) {
+      background-color: #d1fae5 !important;
+      position: relative;
+    }
+
+    tbody tr.selected:not(.folder-header)::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background-color: #059669;
+    }
+
+    /* Video preview styles */
+    .video-preview-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 320px;
+      height: 200px;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      border: 1px solid #e5e7eb;
+      overflow: hidden;
+      transform: scale(0.8) translateY(20px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 1000;
+    }
+
+    .video-preview-container.visible {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+    }
+
+    .video-preview-header {
+      background: #f9fafb;
+      padding: 8px 12px;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .video-preview-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: #374151;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 250px;
+    }
+
+    .video-preview-close {
+      background: none;
+      border: none;
+      color: #6b7280;
+      cursor: pointer;
+      padding: 4px;
+      font-size: 16px;
+      transition: color 0.2s ease;
+      line-height: 1;
+    }
+
+    .video-preview-close:hover {
+      color: #374151;
+    }
+
+    .video-preview-content {
+      height: calc(100% - 41px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .video-preview-video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000;
+    }
+
+    .video-preview-loading,
+    .video-preview-error {
+      text-align: center;
+      color: #6b7280;
+      font-size: 14px;
+      padding: 20px;
+    }
+
+    .video-preview-error {
+      color: #ef4444;
+    }
+
     .export-section {
       margin-top: 24px;
       text-align: center;
@@ -301,7 +401,6 @@
       border-color: #9ca3af;
     }
 
-    /* Loading states */
     .loading {
       text-align: center;
       padding: 40px 20px;
@@ -309,7 +408,6 @@
       font-style: italic;
     }
 
-    /* Empty state with green accent */
     .empty-state {
       text-align: center;
       padding: 60px 20px;
@@ -327,7 +425,6 @@
       line-height: 1.6;
     }
 
-    /* Small decorative elements with green accent */
     .decorative-accent {
       position: relative;
     }
@@ -342,7 +439,6 @@
       background: linear-gradient(90deg, #059669 0%, transparent 100%);
     }
 
-    /* Responsive design */
     @media (max-width: 768px) {
       body {
         padding: 20px 16px;
@@ -375,9 +471,16 @@
       th, td {
         padding: 12px 16px;
       }
+
+      /* Adjust video preview for mobile */
+      .video-preview-container {
+        width: calc(100% - 40px);
+        height: 180px;
+        left: 20px;
+        right: 20px;
+      }
     }
 
-    /* Subtle animations with green theme */
     @keyframes fadeIn {
       from {
         opacity: 0;
@@ -393,7 +496,6 @@
       animation: fadeIn 0.3s ease-out;
     }
 
-    /* Subtle green glow effect for interactive elements */
     .btn-primary:focus {
       box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
     }
@@ -470,6 +572,17 @@
     <div id="fileList"></div>
   </div>
 
+  <!-- Video preview container -->
+  <div id="videoPreview" class="video-preview-container">
+    <div class="video-preview-header">
+      <div class="video-preview-title" id="previewTitle">Video Preview</div>
+      <button class="video-preview-close" onclick="closeVideoPreview()">×</button>
+    </div>
+    <div class="video-preview-content" id="previewContent">
+      <div class="video-preview-loading">Loading video...</div>
+    </div>
+  </div>
+
   <script>
     // Global variables
     let fileList = [];
@@ -478,6 +591,8 @@
     let disableExtensions = false;
     let replaceDots = false;
     let curtailLongTitles = false;
+    let currentPreviewFile = null;
+    let currentSelectedRow = null;
 
     // Initialize when the document is loaded
     document.addEventListener('DOMContentLoaded', function() {
@@ -501,7 +616,7 @@
       fileListDiv.innerHTML = `
         <div class="empty-state">
           <div class="empty-state-icon">🎬</div>
-          <div class="empty-state-text">Select video files or folders to get started.<br>Your organized file list will appear here.</div>
+          <div class="empty-state-text">Select video files or folders to get started.<br>Your organized file list will appear here.<br><br>Click any video in the list to preview it.</div>
         </div>
       `;
     }
@@ -568,6 +683,9 @@
       folderInput.value = '';
       fileList = [];
       folderStructure = {};
+      
+      // Close video preview if open
+      closeVideoPreview();
       
       // Show empty state
       showEmptyState();
@@ -718,6 +836,16 @@
           fileRow.appendChild(runtimeCell);
           fileRow.appendChild(bitrateCell);
           fileRow.appendChild(modifiedDateCell);
+          
+          // Add click handler for video preview
+          fileRow.addEventListener('click', function() {
+            selectVideoForPreview(file, fileRow, fileName);
+          });
+          
+          // Store file reference in the row for easy access
+          fileRow._fileData = file;
+          fileRow._fileName = fileName;
+          
           tableBody.appendChild(fileRow);
           
           // Process video metadata asynchronously
@@ -734,6 +862,92 @@
           });
         });
       });
+    }
+
+    // Handle video selection for preview
+    function selectVideoForPreview(file, row, displayName) {
+      // Remove selection from previously selected row
+      if (currentSelectedRow) {
+        currentSelectedRow.classList.remove('selected');
+      }
+      
+      // Add selection to current row
+      row.classList.add('selected');
+      currentSelectedRow = row;
+      
+      // Update current preview file
+      currentPreviewFile = file;
+      
+      // Show video preview
+      showVideoPreview(file, displayName);
+    }
+
+    // Show video preview
+    function showVideoPreview(file, displayName) {
+      const previewContainer = document.getElementById('videoPreview');
+      const previewTitle = document.getElementById('previewTitle');
+      const previewContent = document.getElementById('previewContent');
+      
+      // Update title
+      previewTitle.textContent = displayName;
+      
+      // Show container
+      previewContainer.classList.add('visible');
+      
+      // Clear previous content
+      previewContent.innerHTML = '<div class="video-preview-loading">Loading video...</div>';
+      
+      // Create video element
+      const video = document.createElement('video');
+      video.className = 'video-preview-video';
+      video.controls = true;
+      video.autoplay = false;
+      
+      // Error handling
+      video.onerror = function() {
+        previewContent.innerHTML = '<div class="video-preview-error">Unable to load video preview</div>';
+      };
+      
+      // When video is ready, show it
+      video.onloadedmetadata = function() {
+        previewContent.innerHTML = '';
+        previewContent.appendChild(video);
+      };
+      
+      // Create object URL for the file
+      const videoUrl = URL.createObjectURL(file);
+      video.src = videoUrl;
+      
+      // Store the URL for cleanup
+      video._objectUrl = videoUrl;
+    }
+
+    // Close video preview
+    function closeVideoPreview() {
+      const previewContainer = document.getElementById('videoPreview');
+      const previewContent = document.getElementById('previewContent');
+      
+      // Hide container
+      previewContainer.classList.remove('visible');
+      
+      // Clean up video element and object URL
+      const video = previewContent.querySelector('video');
+      if (video && video._objectUrl) {
+        URL.revokeObjectURL(video._objectUrl);
+      }
+      
+      // Clear content after animation
+      setTimeout(() => {
+        previewContent.innerHTML = '<div class="video-preview-loading">Loading video...</div>';
+      }, 300);
+      
+      // Remove selection from current row
+      if (currentSelectedRow) {
+        currentSelectedRow.classList.remove('selected');
+        currentSelectedRow = null;
+      }
+      
+      currentPreviewFile = null;
     }
 
     // Add export buttons
