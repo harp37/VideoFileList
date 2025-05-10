@@ -290,13 +290,17 @@
       background-color: #059669;
     }
 
-    /* Video preview styles */
+    /* Enhanced video preview styles with resize/move functionality */
     .video-preview-container {
       position: fixed;
       bottom: 20px;
       right: 20px;
       width: 320px;
       height: 200px;
+      min-width: 200px;
+      min-height: 150px;
+      max-width: 90vw;
+      max-height: 90vh;
       background: #ffffff;
       border-radius: 12px;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
@@ -306,6 +310,8 @@
       opacity: 0;
       transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
       z-index: 1000;
+      /* Prevent text selection during dragging */
+      user-select: none;
     }
 
     .video-preview-container.visible {
@@ -313,6 +319,7 @@
       opacity: 1;
     }
 
+    /* Draggable header */
     .video-preview-header {
       background: #f9fafb;
       padding: 8px 12px;
@@ -320,6 +327,19 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      cursor: move;
+      /* Add visual indicator for draggable area */
+      position: relative;
+    }
+
+    .video-preview-header::before {
+      content: '⋮⋮';
+      position: absolute;
+      left: 8px;
+      color: #9ca3af;
+      font-size: 12px;
+      letter-spacing: -2px;
+      opacity: 0.6;
     }
 
     .video-preview-title {
@@ -330,6 +350,7 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       max-width: 250px;
+      margin-left: 20px;
     }
 
     .video-preview-close {
@@ -353,6 +374,7 @@
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      position: relative;
     }
 
     .video-preview-video {
@@ -372,6 +394,40 @@
 
     .video-preview-error {
       color: #ef4444;
+    }
+
+    /* Resize handles - these are the little areas users can grab to resize */
+    .resize-handle {
+      position: absolute;
+      background: transparent;
+    }
+
+    /* Corner resize handles */
+    .resize-handle.nw { top: 0; left: 0; width: 10px; height: 10px; cursor: nw-resize; }
+    .resize-handle.ne { top: 0; right: 0; width: 10px; height: 10px; cursor: ne-resize; }
+    .resize-handle.sw { bottom: 0; left: 0; width: 10px; height: 10px; cursor: sw-resize; }
+    .resize-handle.se { bottom: 0; right: 0; width: 10px; height: 10px; cursor: se-resize; }
+
+    /* Edge resize handles */
+    .resize-handle.n { top: 0; left: 10px; right: 10px; height: 4px; cursor: n-resize; }
+    .resize-handle.s { bottom: 0; left: 10px; right: 10px; height: 4px; cursor: s-resize; }
+    .resize-handle.e { right: 0; top: 10px; bottom: 10px; width: 4px; cursor: e-resize; }
+    .resize-handle.w { left: 0; top: 10px; bottom: 10px; width: 4px; cursor: w-resize; }
+
+    /* Visual feedback for resize handles */
+    .resize-handle:hover {
+      background: rgba(5, 150, 105, 0.1);
+    }
+
+    /* Indicate when the window is being dragged */
+    .video-preview-container.dragging {
+      transition: none;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Indicate when the window is being resized */
+    .video-preview-container.resizing {
+      transition: none;
     }
 
     .export-section {
@@ -572,15 +628,25 @@
     <div id="fileList"></div>
   </div>
 
-  <!-- Video preview container -->
+  <!-- Video preview container with resize handles -->
   <div id="videoPreview" class="video-preview-container">
-    <div class="video-preview-header">
+    <div class="video-preview-header" id="previewHeader">
       <div class="video-preview-title" id="previewTitle">Video Preview</div>
       <button class="video-preview-close" onclick="closeVideoPreview()">×</button>
     </div>
     <div class="video-preview-content" id="previewContent">
       <div class="video-preview-loading">Loading video...</div>
     </div>
+    
+    <!-- Resize handles -->
+    <div class="resize-handle nw" data-direction="nw"></div>
+    <div class="resize-handle ne" data-direction="ne"></div>
+    <div class="resize-handle sw" data-direction="sw"></div>
+    <div class="resize-handle se" data-direction="se"></div>
+    <div class="resize-handle n" data-direction="n"></div>
+    <div class="resize-handle s" data-direction="s"></div>
+    <div class="resize-handle e" data-direction="e"></div>
+    <div class="resize-handle w" data-direction="w"></div>
   </div>
 
   <script>
@@ -594,6 +660,13 @@
     let currentPreviewFile = null;
     let currentSelectedRow = null;
 
+    // Variables for drag and resize functionality
+    let isDragging = false;
+    let isResizing = false;
+    let currentResizeDirection = '';
+    let dragStart = { x: 0, y: 0 };
+    let elementStart = { x: 0, y: 0, width: 0, height: 0 };
+
     // Initialize when the document is loaded
     document.addEventListener('DOMContentLoaded', function() {
       // Add event listeners for file and folder inputs
@@ -603,6 +676,9 @@
       fileInput.addEventListener('change', handleFileSelection);
       folderInput.addEventListener('change', handleFolderSelection);
       
+      // Initialize drag and resize functionality
+      initializeDragAndResize();
+      
       // Show empty state initially
       showEmptyState();
       
@@ -610,13 +686,189 @@
       updateFileCount();
     });
 
+    // Initialize drag and resize event listeners
+    function initializeDragAndResize() {
+      const previewContainer = document.getElementById('videoPreview');
+      const previewHeader = document.getElementById('previewHeader');
+      const resizeHandles = previewContainer.querySelectorAll('.resize-handle');
+
+      // Drag functionality
+      previewHeader.addEventListener('mousedown', startDrag);
+      
+      // Resize functionality
+      resizeHandles.forEach(handle => {
+        handle.addEventListener('mousedown', startResize);
+      });
+
+      // Document-level mouse events
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', stopDragAndResize);
+      
+      // Prevent selection during drag operations
+      document.addEventListener('selectstart', function(e) {
+        if (isDragging || isResizing) {
+          e.preventDefault();
+        }
+      });
+    }
+
+    // Start dragging the preview window
+    function startDrag(e) {
+      if (e.target.classList.contains('video-preview-close')) return;
+      
+      e.preventDefault();
+      isDragging = true;
+      
+      const previewContainer = document.getElementById('videoPreview');
+      const rect = previewContainer.getBoundingClientRect();
+      
+      // Calculate offset from click point to element top-left
+      dragStart.x = e.clientX - rect.left;
+      dragStart.y = e.clientY - rect.top;
+      
+      previewContainer.classList.add('dragging');
+    }
+
+    // Start resizing the preview window
+    function startResize(e) {
+      e.preventDefault();
+      isResizing = true;
+      currentResizeDirection = e.target.dataset.direction;
+      
+      const previewContainer = document.getElementById('videoPreview');
+      const rect = previewContainer.getBoundingClientRect();
+      
+      // Store initial values
+      dragStart.x = e.clientX;
+      dragStart.y = e.clientY;
+      elementStart.x = rect.left;
+      elementStart.y = rect.top;
+      elementStart.width = rect.width;
+      elementStart.height = rect.height;
+      
+      previewContainer.classList.add('resizing');
+    }
+
+    // Handle mouse movement for drag and resize
+    function handleMouseMove(e) {
+      if (!isDragging && !isResizing) return;
+      
+      e.preventDefault();
+      const previewContainer = document.getElementById('videoPreview');
+      
+      if (isDragging) {
+        // Calculate new position
+        let newX = e.clientX - dragStart.x;
+        let newY = e.clientY - dragStart.y;
+        
+        // Apply boundary constraints
+        const maxX = window.innerWidth - previewContainer.offsetWidth;
+        const maxY = window.innerHeight - previewContainer.offsetHeight;
+        
+        newX = Math.max(0, Math.min(newX, maxX));
+        newY = Math.max(0, Math.min(newY, maxY));
+        
+        // Update position
+        previewContainer.style.left = newX + 'px';
+        previewContainer.style.top = newY + 'px';
+        previewContainer.style.right = 'auto';
+        previewContainer.style.bottom = 'auto';
+      }
+      
+      if (isResizing) {
+        // Calculate size deltas
+        const deltaX = e.clientX - dragStart.x;
+        const deltaY = e.clientY - dragStart.y;
+        
+        let newWidth = elementStart.width;
+        let newHeight = elementStart.height;
+        let newX = elementStart.x;
+        let newY = elementStart.y;
+        
+        // Apply size changes based on resize direction
+        switch (currentResizeDirection) {
+          case 'se': // Bottom-right corner
+            newWidth += deltaX;
+            newHeight += deltaY;
+            break;
+          case 'sw': // Bottom-left corner
+            newWidth -= deltaX;
+            newHeight += deltaY;
+            newX += deltaX;
+            break;
+          case 'ne': // Top-right corner
+            newWidth += deltaX;
+            newHeight -= deltaY;
+            newY += deltaY;
+            break;
+          case 'nw': // Top-left corner
+            newWidth -= deltaX;
+            newHeight -= deltaY;
+            newX += deltaX;
+            newY += deltaY;
+            break;
+          case 'n': // Top edge
+            newHeight -= deltaY;
+            newY += deltaY;
+            break;
+          case 's': // Bottom edge
+            newHeight += deltaY;
+            break;
+          case 'e': // Right edge
+            newWidth += deltaX;
+            break;
+          case 'w': // Left edge
+            newWidth -= deltaX;
+            newX += deltaX;
+            break;
+        }
+        
+        // Apply minimum and maximum constraints
+        const minWidth = 200;
+        const minHeight = 150;
+        const maxWidth = window.innerWidth * 0.9;
+        const maxHeight = window.innerHeight * 0.9;
+        
+        newWidth = Math.max(minWidth, Math.min(newWidth, maxWidth));
+        newHeight = Math.max(minHeight, Math.min(newHeight, maxHeight));
+        
+        // Adjust position if we hit minimum size on left/top resize
+        if (newWidth === minWidth && currentResizeDirection.includes('w')) {
+          newX = elementStart.x + (elementStart.width - minWidth);
+        }
+        if (newHeight === minHeight && currentResizeDirection.includes('n')) {
+          newY = elementStart.y + (elementStart.height - minHeight);
+        }
+        
+        // Apply new dimensions and position
+        previewContainer.style.width = newWidth + 'px';
+        previewContainer.style.height = newHeight + 'px';
+        previewContainer.style.left = newX + 'px';
+        previewContainer.style.top = newY + 'px';
+        previewContainer.style.right = 'auto';
+        previewContainer.style.bottom = 'auto';
+      }
+    }
+
+    // Stop dragging or resizing
+    function stopDragAndResize() {
+      if (!isDragging && !isResizing) return;
+      
+      const previewContainer = document.getElementById('videoPreview');
+      previewContainer.classList.remove('dragging', 'resizing');
+      
+      isDragging = false;
+      isResizing = false;
+      currentResizeDirection = '';
+    }
+
     // Show empty state message
     function showEmptyState() {
       const fileListDiv = document.getElementById('fileList');
       fileListDiv.innerHTML = `
         <div class="empty-state">
           <div class="empty-state-icon">🎬</div>
-          <div class="empty-state-text">Select video files or folders to get started.<br>Your organized file list will appear here.<br><br>Click any video in the list to preview it.</div>
+          <div class="empty-state-text">Select video files or folders to get started.<br>Your organized file list will appear here.<br><br>Click any video in the list to preview it.<br>Drag the preview window to move it, resize from any edge or corner.</div>
         </div>
       `;
     }
