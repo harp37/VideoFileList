@@ -6,44 +6,77 @@
   <title>Video File List Generator</title>
   
   <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* Arc-inspired base styles */
+    * {
       margin: 0;
-      padding: 20px;
-      background-color: #f5fff7;
-      color: #333;
-      line-height: 1.6;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background-color: #fafafa; /* Arc's light gray background */
+      color: #1a1a1a;
+      line-height: 1.5;
+      padding: 40px 20px;
+      min-height: 100vh;
+    }
+
+    /* Container for the entire app */
+    .app-container {
       max-width: 1200px;
       margin: 0 auto;
     }
 
-    h1 {
-      color: #2e7d32;
+    /* Arc-style header */
+    .app-header {
       text-align: center;
-      margin-bottom: 20px;
-      border-bottom: 2px solid #a8e6c1;
-      padding-bottom: 10px;
+      margin-bottom: 48px;
     }
 
-    .control-panel {
-      background-color: #e8f5e9;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 10px;
+    h1 {
+      color: #1a1a1a;
+      font-size: 32px;
+      font-weight: 400;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
     }
 
-    .file-input-container {
+    .app-subtitle {
+      color: #8e8e93;
+      font-size: 16px;
+      font-weight: 400;
+    }
+
+    /* Arc-style card design for controls */
+    .control-card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      border: 1px solid #e5e5e7;
+    }
+
+    .file-input-section {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: #48484a;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Arc-style file input buttons */
+    .file-inputs {
       display: flex;
-      gap: 10px;
-      align-items: center;
+      gap: 12px;
       flex-wrap: wrap;
-      margin-bottom: 10px;
-      width: 100%;
+      margin-bottom: 16px;
     }
 
     .custom-file-input {
@@ -53,8 +86,6 @@
 
     .custom-file-input input[type="file"] {
       position: absolute;
-      left: 0;
-      top: 0;
       opacity: 0;
       width: 100%;
       height: 100%;
@@ -62,221 +93,362 @@
     }
 
     .custom-file-input label {
-      background-color: #4caf50;
-      color: white;
-      padding: 10px 15px;
-      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 8px;
       cursor: pointer;
-      transition: background-color 0.3s;
-      display: inline-block;
+      transition: all 0.2s ease;
+      font-size: 15px;
+      font-weight: 500;
+      border: 1px solid transparent;
     }
 
-    /* Style for folder input button - slightly different color to distinguish */
-    .custom-folder-input label {
-      background-color: #2196f3;
+    /* Files button - Arc's signature purple */
+    .file-button label {
+      background-color: #8b5cf6;
+      color: white;
     }
 
-    .custom-file-input:hover label {
-      background-color: #388e3c;
+    .file-button:hover label {
+      background-color: #7c3aed;
     }
 
-    .custom-folder-input:hover label {
-      background-color: #1976d2;
+    /* Folders button - Complementary purple tone */
+    .folder-button label {
+      background-color: #a78bfa;
+      color: white;
+    }
+
+    .folder-button:hover label {
+      background-color: #8b5cf6;
+    }
+
+    /* Status and action buttons section */
+    .status-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
     }
 
     .file-count {
-      margin-left: 10px;
-      color: #555;
+      color: #8e8e93;
+      font-size: 15px;
     }
 
-    .clear-button {
-      background-color: #f44336;
-      color: white;
+    /* Arc-style buttons */
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
       border: none;
-      padding: 8px 12px;
-      border-radius: 4px;
       cursor: pointer;
-      transition: background-color 0.3s;
-      font-size: 0.9em;
+      font-size: 15px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .clear-button:hover {
-      background-color: #d32f2f;
-    }
-
-    button {
-      background-color: #4caf50;
+    .btn-primary {
+      background-color: #8b5cf6;
       color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background-color 0.3s;
-      font-weight: bold;
     }
 
-    button:hover {
-      background-color: #388e3c;
+    .btn-primary:hover {
+      background-color: #7c3aed;
     }
 
-    button:disabled {
-      background-color: #cccccc;
+    .btn-primary:disabled {
+      background-color: #e5e5e7;
+      color: #8e8e93;
       cursor: not-allowed;
     }
 
-    .checkbox-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      margin-top: 10px;
+    .btn-secondary {
+      background-color: #f5f5f7;
+      color: #48484a;
+      border: 1px solid #e5e5e7;
     }
 
-    .checkbox-container {
+    .btn-secondary:hover {
+      background-color: #ebebed;
+    }
+
+    /* Options toggles */
+    .options-section {
+      border-top: 1px solid #e5e5e7;
+      padding-top: 24px;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .option-toggle {
       display: flex;
       align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .option-toggle input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: #8b5cf6;
       cursor: pointer;
     }
 
-    .checkbox-container input[type="checkbox"] {
-      margin-right: 5px;
+    .option-toggle label {
+      font-size: 15px;
+      color: #1a1a1a;
+      cursor: pointer;
     }
 
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      margin-top: 20px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      border-radius: 8px;
+    /* File list container */
+    .file-list-container {
+      background: #ffffff;
+      border-radius: 12px;
       overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      border: 1px solid #e5e5e7;
+    }
+
+    /* Table styling */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 15px;
     }
 
     thead {
-      background-color: #2e7d32;
-      color: white;
+      background-color: #fafafa;
+      border-bottom: 1px solid #e5e5e7;
     }
 
     th {
-      padding: 12px 15px;
+      padding: 16px 20px;
       text-align: left;
-      font-weight: 600;
+      font-weight: 500;
+      color: #48484a;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     td {
-      padding: 12px 15px;
-      border-bottom: 1px solid #ddd;
+      padding: 16px 20px;
+      border-bottom: 1px solid #f5f5f7;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
     }
 
     tr:nth-child(even) {
-      background-color: #eaf7ed;
+      background-color: #fafafa;
     }
 
     tr:hover {
-      background-color: #c5edcc;
+      background-color: #f5f5f7;
     }
 
-    /* Style for folder separator rows */
+    /* Folder header rows */
     .folder-header {
-      background-color: #4caf50 !important;
+      background-color: #8b5cf6 !important;
       color: white !important;
-      font-weight: bold;
     }
 
     .folder-header:hover {
-      background-color: #43a047 !important;
+      background-color: #7c3aed !important;
     }
 
-    .green-highlight {
-      background-color: #c5edcc;
-      color: #333;
+    .folder-header td {
+      font-weight: 500;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .export-buttons {
-      display: none;
-      margin-top: 20px;
+    /* Export buttons container */
+    .export-section {
+      margin-top: 24px;
+      text-align: center;
+    }
+
+    .export-grid {
       display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
+      gap: 12px;
       justify-content: center;
-    }
-
-    .file-list-generated .export-buttons {
-      display: flex;
+      flex-wrap: wrap;
+      margin-top: 16px;
     }
 
     .export-button {
-      background-color: #3f51b5;
-      padding: 10px 15px;
-      margin: 0;
+      background-color: #f5f5f7;
+      color: #48484a;
+      border: 1px solid #e5e5e7;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .export-button:hover {
-      background-color: #303f9f;
+      background-color: #ebebed;
     }
 
+    /* Loading states */
     .loading {
       text-align: center;
-      padding: 20px;
+      padding: 40px 20px;
+      color: #8e8e93;
       font-style: italic;
-      color: #666;
     }
 
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #8e8e93;
+    }
+
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+
+    .empty-state-text {
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    /* Responsive design */
     @media (max-width: 768px) {
-      .control-panel {
-        flex-direction: column;
-        align-items: flex-start;
+      body {
+        padding: 20px 16px;
       }
-      
-      .checkbox-group {
+
+      .app-header {
+        margin-bottom: 32px;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+
+      .control-card {
+        padding: 20px;
+      }
+
+      .file-inputs {
         flex-direction: column;
       }
+
+      .options-grid {
+        grid-template-columns: 1fr;
+      }
+
+      table {
+        font-size: 14px;
+      }
+
+      th, td {
+        padding: 12px 16px;
+      }
+    }
+
+    /* Subtle animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .file-list-container {
+      animation: fadeIn 0.3s ease-out;
     }
   </style>
 </head>
 
 <body>
-  <h1>Video File List Generator</h1>
+  <div class="app-container">
+    <header class="app-header">
+      <h1>Video Library Manager</h1>
+      <p class="app-subtitle">Organize and analyze your video files with ease</p>
+    </header>
 
-  <div class="control-panel">
-    <div class="file-input-container">
-      <div class="custom-file-input">
-        <input type="file" id="fileInput" multiple accept="video/*">
-        <label for="fileInput">Select Files</label>
+    <div class="control-card">
+      <div class="file-input-section">
+        <h2 class="section-title">Select Content</h2>
+        <div class="file-inputs">
+          <div class="custom-file-input file-button">
+            <input type="file" id="fileInput" multiple accept="video/*">
+            <label for="fileInput">
+              <span>📁</span>
+              Select Files
+            </label>
+          </div>
+          <div class="custom-file-input folder-button">
+            <input type="file" id="folderInput" webkitdirectory directory accept="video/*">
+            <label for="folderInput">
+              <span>📂</span>
+              Select Folders
+            </label>
+          </div>
+        </div>
+        
+        <div class="status-actions">
+          <span class="file-count" id="fileCount">No content selected</span>
+          <button class="btn btn-secondary" id="clearButton" onclick="clearSelection()">
+            <span>↻</span>
+            Clear Selection
+          </button>
+          <button class="btn btn-primary" id="generateButton" onclick="handleGenerateList()" disabled>
+            <span>⚡</span>
+            Generate List
+          </button>
+        </div>
       </div>
-      <div class="custom-file-input custom-folder-input">
-        <input type="file" id="folderInput" webkitdirectory directory accept="video/*">
-        <label for="folderInput">Select Folders</label>
+      
+      <div class="options-section">
+        <h2 class="section-title">Formatting Options</h2>
+        <div class="options-grid">
+          <label class="option-toggle">
+            <input type="checkbox" id="disableExtensionsCheckbox" onchange="toggleDisableExtensions()">
+            <span>Hide File Extensions</span>
+          </label>
+          <label class="option-toggle">
+            <input type="checkbox" id="disableResolutionsCheckbox" onchange="toggleDisableResolutions()">
+            <span>Hide Resolutions</span>
+          </label>
+          <label class="option-toggle">
+            <input type="checkbox" id="replaceDotsCheckbox" onchange="toggleReplaceDots()">
+            <span>Replace Dots with Spaces</span>
+          </label>
+          <label class="option-toggle">
+            <input type="checkbox" id="curtailLongTitlesCheckbox" onchange="toggleCurtailLongTitles()">
+            <span>Limit Long Titles</span>
+          </label>
+        </div>
       </div>
-      <span class="file-count" id="fileCount">No files selected</span>
-      <button class="clear-button" id="clearButton" onclick="clearSelection()">Clear Selection</button>
-      <button id="generateButton" onclick="handleGenerateList()" disabled>Generate List</button>
     </div>
-    
-    <div class="checkbox-group">
-      <label class="checkbox-container">
-        <input type="checkbox" id="disableExtensionsCheckbox" onchange="toggleDisableExtensions()">
-        Hide File Extensions
-      </label>
-      <label class="checkbox-container">
-        <input type="checkbox" id="disableResolutionsCheckbox" onchange="toggleDisableResolutions()">
-        Hide Resolutions
-      </label>
-      <label class="checkbox-container">
-        <input type="checkbox" id="replaceDotsCheckbox" onchange="toggleReplaceDots()">
-        Replace Dots with Spaces
-      </label>
-      <label class="checkbox-container">
-        <input type="checkbox" id="curtailLongTitlesCheckbox" onchange="toggleCurtailLongTitles()">
-        Limit Long Titles
-      </label>
-    </div>
+
+    <div id="fileList"></div>
   </div>
-
-  <div id="fileList"></div>
 
   <script>
     // Global variables
     let fileList = [];
-    let folderStructure = {};  // Store files organized by folder
+    let folderStructure = {};
     let disableResolutions = false;
     let disableExtensions = false;
     let replaceDots = false;
@@ -291,9 +463,23 @@
       fileInput.addEventListener('change', handleFileSelection);
       folderInput.addEventListener('change', handleFolderSelection);
       
+      // Show empty state initially
+      showEmptyState();
+      
       // Update UI for initial state
       updateFileCount();
     });
+
+    // Show empty state message
+    function showEmptyState() {
+      const fileListDiv = document.getElementById('fileList');
+      fileListDiv.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">📼</div>
+          <div class="empty-state-text">Select video files or folders to get started.<br>Your organized file list will appear here.</div>
+        </div>
+      `;
+    }
 
     // Handle file selection
     function handleFileSelection() {
@@ -311,6 +497,10 @@
         });
         
         updateFileCount();
+        // Clear empty state once files are selected
+        if (Object.keys(folderStructure).length > 0) {
+          document.getElementById('fileList').innerHTML = '';
+        }
       }
     }
 
@@ -337,6 +527,10 @@
         });
         
         updateFileCount();
+        // Clear empty state once files are selected
+        if (Object.keys(folderStructure).length > 0) {
+          document.getElementById('fileList').innerHTML = '';
+        }
       }
     }
 
@@ -350,10 +544,8 @@
       fileList = [];
       folderStructure = {};
       
-      // Clear the file list display
-      const fileListDiv = document.getElementById('fileList');
-      fileListDiv.innerHTML = '';
-      fileListDiv.classList.remove('file-list-generated');
+      // Show empty state
+      showEmptyState();
       
       updateFileCount();
     }
@@ -372,14 +564,14 @@
       });
       
       if (totalFiles === 0) {
-        fileCountElement.textContent = 'No files selected';
+        fileCountElement.textContent = 'No content selected';
         generateButton.disabled = true;
       } else {
-        let countText = `${totalFiles} file(s)`;
+        let countText = `${totalFiles} file${totalFiles === 1 ? '' : 's'}`;
         if (totalFolders > 0) {
-          countText += ` from ${totalFolders} folder(s)`;
+          countText += ` from ${totalFolders} source${totalFolders === 1 ? '' : 's'}`;
         }
-        fileCountElement.textContent = countText + ' selected';
+        fileCountElement.textContent = countText;
         generateButton.disabled = false;
       }
     }
@@ -402,7 +594,6 @@
       
       // Use setTimeout to allow the "processing" message to display
       setTimeout(() => {
-        fileListDiv.classList.add('file-list-generated');
         createFileList();
       }, 10);
     }
@@ -412,6 +603,10 @@
       const fileListDiv = document.getElementById('fileList');
       fileListDiv.innerHTML = ''; // Clear previous file list
 
+      // Create container for the table
+      const container = document.createElement('div');
+      container.className = 'file-list-container';
+      
       const table = document.createElement('table');
       const tableHead = document.createElement('thead');
       const tableBody = document.createElement('tbody');
@@ -427,7 +622,8 @@
       tableHead.appendChild(headerRow);
       table.appendChild(tableHead);
       table.appendChild(tableBody);
-      fileListDiv.appendChild(table);
+      container.appendChild(table);
+      fileListDiv.appendChild(container);
 
       let processedCount = 0;
       let totalFiles = 0;
@@ -444,6 +640,7 @@
       loadingCell.textContent = 'Processing video metadata...';
       loadingCell.style.textAlign = 'center';
       loadingCell.style.fontStyle = 'italic';
+      loadingCell.style.color = '#8e8e93';
       loadingRow.appendChild(loadingCell);
       tableBody.appendChild(loadingRow);
 
@@ -518,16 +715,14 @@
     function addExportButtons() {
       const fileListDiv = document.getElementById('fileList');
 
-      // Remove existing export buttons if any
-      const existingExportButtonsDiv = document.getElementById('exportButtonsDiv');
-      if (existingExportButtonsDiv) {
-        fileListDiv.removeChild(existingExportButtonsDiv);
-      }
+      // Create export section
+      const exportSection = document.createElement('div');
+      exportSection.className = 'export-section';
+      exportSection.innerHTML = '<h2 class="section-title">Export Options</h2>';
 
       // Create a div to hold the export buttons
-      const exportButtonsDiv = document.createElement('div');
-      exportButtonsDiv.id = 'exportButtonsDiv';
-      exportButtonsDiv.className = 'export-buttons';
+      const exportGrid = document.createElement('div');
+      exportGrid.className = 'export-grid';
 
       // Create the export buttons
       const buttons = [
@@ -540,14 +735,14 @@
       buttons.forEach(btn => {
         const button = document.createElement('button');
         button.id = btn.id;
-        button.className = 'export-button';
-        button.innerHTML = `${btn.icon} ${btn.text}`;
+        button.className = 'btn export-button';
+        button.innerHTML = `<span>${btn.icon}</span>${btn.text}`;
         button.addEventListener('click', btn.handler);
-        exportButtonsDiv.appendChild(button);
+        exportGrid.appendChild(button);
       });
 
-      // Append the export buttons to the file list div
-      fileListDiv.appendChild(exportButtonsDiv);
+      exportSection.appendChild(exportGrid);
+      fileListDiv.appendChild(exportSection);
     }
 
     // Get video metadata (runtime and bitrate)
@@ -623,60 +818,60 @@
     // Export to PDF
     function exportToPDF() {
       const table = document.querySelector('table');
-      const fileListDiv = document.getElementById('fileList');
-
+      
       // Create a printable version with styling
       const printContent = `
         <html>
         <head>
-          <title>Video File List</title>
+          <title>Video Library Report</title>
           <style>
             body {
-              font-family: 'Segoe UI', Arial, sans-serif;
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
               margin: 0;
-              padding: 20px;
-              font-size: 12px;
+              padding: 40px;
+              background: white;
+              color: #1a1a1a;
             }
             h1 {
-              color: #2e7d32;
               text-align: center;
-              margin-bottom: 20px;
+              margin-bottom: 40px;
+              font-weight: 400;
             }
             table {
               width: 100%;
               border-collapse: collapse;
+              margin-bottom: 40px;
             }
             th {
-              background-color: #2e7d32;
-              color: white;
-              padding: 8px;
+              background-color: #fafafa;
+              padding: 12px 16px;
               text-align: left;
+              font-weight: 500;
+              color: #48484a;
+              border-bottom: 1px solid #e5e5e7;
             }
             td {
-              padding: 8px;
-              border-bottom: 1px solid #ddd;
-            }
-            tr:nth-child(even) {
-              background-color: #eaf7ed;
+              padding: 12px 16px;
+              border-bottom: 1px solid #f5f5f7;
             }
             .folder-header {
-              background-color: #4caf50 !important;
+              background-color: #8b5cf6 !important;
               color: white !important;
-              font-weight: bold;
+              font-weight: 500;
             }
             .footer {
-              margin-top: 20px;
+              margin-top: 40px;
               text-align: center;
-              font-style: italic;
-              color: #666;
+              color: #8e8e93;
+              font-size: 14px;
             }
           </style>
         </head>
         <body>
-          <h1>Video File List</h1>
+          <h1>Video Library Report</h1>
           ${table.outerHTML}
           <div class="footer">
-            Generated on ${new Date().toLocaleDateString()}
+            Generated on ${new Date().toLocaleDateString()} • Video Library Manager
           </div>
         </body>
         </html>
@@ -710,7 +905,8 @@
       const table = document.querySelector('table');
       const rows = Array.from(table.querySelectorAll('tr'));
       
-      let plainTextContent = '';
+      let plainTextContent = 'VIDEO LIBRARY REPORT\n';
+      plainTextContent += '===================\n\n';
       
       // Process each row
       rows.forEach(row => {
@@ -721,7 +917,7 @@
         // If this is a folder header row
         if (row.classList.contains('folder-header')) {
           plainTextContent += `\n${dataCells[0].textContent}\n`;
-          plainTextContent += '=' .repeat(dataCells[0].textContent.length) + '\n';
+          plainTextContent += '-'.repeat(dataCells[0].textContent.length) + '\n';
         }
         // If this is a regular header row
         else if (headerCells.length > 0) {
@@ -757,7 +953,9 @@
         }
       });
 
-      downloadFile(plainTextContent, 'video_file_list.txt', 'text/plain');
+      plainTextContent += `\n\nGenerated on ${new Date().toLocaleDateString()} • Video Library Manager\n`;
+
+      downloadFile(plainTextContent, 'video_library_report.txt', 'text/plain');
     }
 
     // Export to Excel (CSV)
@@ -797,7 +995,7 @@
         csvContent += rowContent + '\n';
       });
 
-      downloadFile(csvContent, 'video_file_list.csv', 'text/csv');
+      downloadFile(csvContent, 'video_library_report.csv', 'text/csv');
     }
 
     // Helper function to download a file
@@ -820,22 +1018,22 @@
     // Toggle functionality for options
     function toggleDisableResolutions() {
       disableResolutions = !disableResolutions;
-      createFileList();
+      if (fileList.length > 0) createFileList();
     }
 
     function toggleDisableExtensions() {
       disableExtensions = !disableExtensions;
-      createFileList();
+      if (fileList.length > 0) createFileList();
     }
 
     function toggleReplaceDots() {
       replaceDots = !replaceDots;
-      createFileList();
+      if (fileList.length > 0) createFileList();
     }
 
     function toggleCurtailLongTitles() {
       curtailLongTitles = !curtailLongTitles;
-      createFileList();
+      if (fileList.length > 0) createFileList();
     }
 
     // Utility functions for file name processing
