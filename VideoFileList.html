@@ -71,13 +71,37 @@
       display: inline-block;
     }
 
+    /* Style for folder input button - slightly different color to distinguish */
+    .custom-folder-input label {
+      background-color: #2196f3;
+    }
+
     .custom-file-input:hover label {
       background-color: #388e3c;
+    }
+
+    .custom-folder-input:hover label {
+      background-color: #1976d2;
     }
 
     .file-count {
       margin-left: 10px;
       color: #555;
+    }
+
+    .clear-button {
+      background-color: #f44336;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      font-size: 0.9em;
+    }
+
+    .clear-button:hover {
+      background-color: #d32f2f;
     }
 
     button {
@@ -150,6 +174,17 @@
       background-color: #c5edcc;
     }
 
+    /* Style for folder separator rows */
+    .folder-header {
+      background-color: #4caf50 !important;
+      color: white !important;
+      font-weight: bold;
+    }
+
+    .folder-header:hover {
+      background-color: #43a047 !important;
+    }
+
     .green-highlight {
       background-color: #c5edcc;
       color: #333;
@@ -205,9 +240,14 @@
     <div class="file-input-container">
       <div class="custom-file-input">
         <input type="file" id="fileInput" multiple accept="video/*">
-        <label for="fileInput">Select Video Files</label>
+        <label for="fileInput">Select Files</label>
+      </div>
+      <div class="custom-file-input custom-folder-input">
+        <input type="file" id="folderInput" webkitdirectory directory accept="video/*">
+        <label for="folderInput">Select Folders</label>
       </div>
       <span class="file-count" id="fileCount">No files selected</span>
+      <button class="clear-button" id="clearButton" onclick="clearSelection()">Clear Selection</button>
       <button id="generateButton" onclick="handleGenerateList()" disabled>Generate List</button>
     </div>
     
@@ -236,6 +276,7 @@
   <script>
     // Global variables
     let fileList = [];
+    let folderStructure = {};  // Store files organized by folder
     let disableResolutions = false;
     let disableExtensions = false;
     let replaceDots = false;
@@ -243,34 +284,116 @@
 
     // Initialize when the document is loaded
     document.addEventListener('DOMContentLoaded', function() {
-      // Add event listener for file input
+      // Add event listeners for file and folder inputs
       const fileInput = document.getElementById('fileInput');
-      fileInput.addEventListener('change', updateFileCount);
+      const folderInput = document.getElementById('folderInput');
+      
+      fileInput.addEventListener('change', handleFileSelection);
+      folderInput.addEventListener('change', handleFolderSelection);
       
       // Update UI for initial state
       updateFileCount();
     });
 
+    // Handle file selection
+    function handleFileSelection() {
+      const fileInput = document.getElementById('fileInput');
+      
+      // Add selected files to fileList (not organized by folder)
+      if (fileInput.files.length > 0) {
+        const files = Array.from(fileInput.files);
+        files.forEach(file => {
+          // Add files without folder context
+          if (!folderStructure['Individual Files']) {
+            folderStructure['Individual Files'] = [];
+          }
+          folderStructure['Individual Files'].push(file);
+        });
+        
+        updateFileCount();
+      }
+    }
+
+    // Handle folder selection
+    function handleFolderSelection() {
+      const folderInput = document.getElementById('folderInput');
+      
+      if (folderInput.files.length > 0) {
+        // Organize files by their relative folder path
+        const files = Array.from(folderInput.files);
+        
+        files.forEach(file => {
+          // Get the folder path relative to the selected directory
+          let relativePath = file.webkitRelativePath || file.relativePath || '';
+          let folderPath = relativePath.substring(0, relativePath.lastIndexOf('/')) || 'Root';
+          
+          // Create folder entry if it doesn't exist
+          if (!folderStructure[folderPath]) {
+            folderStructure[folderPath] = [];
+          }
+          
+          // Add file to the appropriate folder
+          folderStructure[folderPath].push(file);
+        });
+        
+        updateFileCount();
+      }
+    }
+
+    // Clear all selections
+    function clearSelection() {
+      const fileInput = document.getElementById('fileInput');
+      const folderInput = document.getElementById('folderInput');
+      
+      fileInput.value = '';
+      folderInput.value = '';
+      fileList = [];
+      folderStructure = {};
+      
+      // Clear the file list display
+      const fileListDiv = document.getElementById('fileList');
+      fileListDiv.innerHTML = '';
+      fileListDiv.classList.remove('file-list-generated');
+      
+      updateFileCount();
+    }
+
     // Update file count display and generate button status
     function updateFileCount() {
-      const fileInput = document.getElementById('fileInput');
       const fileCountElement = document.getElementById('fileCount');
       const generateButton = document.getElementById('generateButton');
       
-      if (fileInput.files.length === 0) {
+      // Count total files across all folders
+      let totalFiles = 0;
+      let totalFolders = Object.keys(folderStructure).length;
+      
+      Object.values(folderStructure).forEach(files => {
+        totalFiles += files.length;
+      });
+      
+      if (totalFiles === 0) {
         fileCountElement.textContent = 'No files selected';
         generateButton.disabled = true;
       } else {
-        fileCountElement.textContent = `${fileInput.files.length} file(s) selected`;
+        let countText = `${totalFiles} file(s)`;
+        if (totalFolders > 0) {
+          countText += ` from ${totalFolders} folder(s)`;
+        }
+        fileCountElement.textContent = countText + ' selected';
         generateButton.disabled = false;
       }
     }
 
     // Handle generate list button click
     function handleGenerateList() {
-      const fileInput = document.getElementById('fileInput');
-      if (fileInput.files.length === 0) {
-        alert('Please select one or more files.');
+      // Create fileList from folderStructure
+      fileList = [];
+      Object.values(folderStructure).forEach(files => {
+        fileList = fileList.concat(files);
+      });
+      
+      if (fileList.length === 0) {
+        alert('Please select one or more files or folders.');
         return;
       }
 
@@ -279,7 +402,6 @@
       
       // Use setTimeout to allow the "processing" message to display
       setTimeout(() => {
-        fileList = Array.from(fileInput.files);
         fileListDiv.classList.add('file-list-generated');
         createFileList();
       }, 10);
@@ -308,7 +430,12 @@
       fileListDiv.appendChild(table);
 
       let processedCount = 0;
-      const totalFiles = fileList.length;
+      let totalFiles = 0;
+      
+      // Count total files for progress tracking
+      Object.values(folderStructure).forEach(files => {
+        totalFiles += files.length;
+      });
       
       // Add a loading indicator row
       const loadingRow = document.createElement('tr');
@@ -320,54 +447,69 @@
       loadingRow.appendChild(loadingCell);
       tableBody.appendChild(loadingRow);
 
-      fileList.forEach((file, index) => {
-        const fileRow = document.createElement('tr');
-        const fileNameCell = document.createElement('td');
-        let fileName = file.name;
-
-        if (disableResolutions) {
-          fileName = removeResolutionsFromFileName(fileName);
+      // Process files by folder
+      Object.entries(folderStructure).forEach(([folderPath, files]) => {
+        // Add folder header row if we have multiple folders
+        if (Object.keys(folderStructure).length > 1) {
+          const folderRow = document.createElement('tr');
+          folderRow.className = 'folder-header';
+          const folderCell = document.createElement('td');
+          folderCell.colSpan = 4;
+          folderCell.textContent = `📁 ${folderPath} (${files.length} files)`;
+          folderRow.appendChild(folderCell);
+          tableBody.appendChild(folderRow);
         }
 
-        if (disableExtensions) {
-          fileName = removeExtensionsFromFileName(fileName);
-        }
+        // Process files in this folder
+        files.forEach((file, index) => {
+          const fileRow = document.createElement('tr');
+          const fileNameCell = document.createElement('td');
+          let fileName = file.name;
 
-        if (replaceDots) {
-          fileName = replaceDotsWithSpaces(fileName);
-        }
-
-        if (curtailLongTitles) {
-          fileName = curtailFileName(fileName);
-        }
-
-        fileNameCell.textContent = fileName;
-        const runtimeCell = document.createElement('td');
-        const bitrateCell = document.createElement('td');
-        const modifiedDateCell = document.createElement('td');
-        
-        // Set initial values
-        runtimeCell.textContent = 'Loading...';
-        bitrateCell.textContent = 'Loading...';
-        modifiedDateCell.textContent = formatDate(file.lastModified);
-
-        fileRow.appendChild(fileNameCell);
-        fileRow.appendChild(runtimeCell);
-        fileRow.appendChild(bitrateCell);
-        fileRow.appendChild(modifiedDateCell);
-        tableBody.appendChild(fileRow);
-        
-        // Process video metadata asynchronously
-        getVideoMetadata(file, runtimeCell, bitrateCell).then(() => {
-          processedCount++;
-          if (processedCount === totalFiles) {
-            // Remove loading row when all files are processed
-            if (tableBody.contains(loadingRow)) {
-              tableBody.removeChild(loadingRow);
-            }
-            // Add export buttons after all files are processed
-            addExportButtons();
+          if (disableResolutions) {
+            fileName = removeResolutionsFromFileName(fileName);
           }
+
+          if (disableExtensions) {
+            fileName = removeExtensionsFromFileName(fileName);
+          }
+
+          if (replaceDots) {
+            fileName = replaceDotsWithSpaces(fileName);
+          }
+
+          if (curtailLongTitles) {
+            fileName = curtailFileName(fileName);
+          }
+
+          fileNameCell.textContent = fileName;
+          const runtimeCell = document.createElement('td');
+          const bitrateCell = document.createElement('td');
+          const modifiedDateCell = document.createElement('td');
+          
+          // Set initial values
+          runtimeCell.textContent = 'Loading...';
+          bitrateCell.textContent = 'Loading...';
+          modifiedDateCell.textContent = formatDate(file.lastModified);
+
+          fileRow.appendChild(fileNameCell);
+          fileRow.appendChild(runtimeCell);
+          fileRow.appendChild(bitrateCell);
+          fileRow.appendChild(modifiedDateCell);
+          tableBody.appendChild(fileRow);
+          
+          // Process video metadata asynchronously
+          getVideoMetadata(file, runtimeCell, bitrateCell).then(() => {
+            processedCount++;
+            if (processedCount === totalFiles) {
+              // Remove loading row when all files are processed
+              if (tableBody.contains(loadingRow)) {
+                tableBody.removeChild(loadingRow);
+              }
+              // Add export buttons after all files are processed
+              addExportButtons();
+            }
+          });
         });
       });
     }
@@ -517,6 +659,11 @@
             tr:nth-child(even) {
               background-color: #eaf7ed;
             }
+            .folder-header {
+              background-color: #4caf50 !important;
+              color: white !important;
+              font-weight: bold;
+            }
             .footer {
               margin-top: 20px;
               text-align: center;
@@ -571,8 +718,13 @@
         const headerCells = row.querySelectorAll('th');
         const dataCells = row.querySelectorAll('td');
         
-        // If this is a header row
-        if (headerCells.length > 0) {
+        // If this is a folder header row
+        if (row.classList.contains('folder-header')) {
+          plainTextContent += `\n${dataCells[0].textContent}\n`;
+          plainTextContent += '=' .repeat(dataCells[0].textContent.length) + '\n';
+        }
+        // If this is a regular header row
+        else if (headerCells.length > 0) {
           plainTextContent += '| ';
           headerCells.forEach((cell, index) => {
             plainTextContent += cell.textContent;
@@ -619,6 +771,13 @@
       rows.forEach(row => {
         const headerCells = row.querySelectorAll('th');
         const dataCells = row.querySelectorAll('td');
+        
+        // Handle folder header rows
+        if (row.classList.contains('folder-header')) {
+          csvContent += `\n"${dataCells[0].textContent}"\n`;
+          csvContent += ',,,,\n'; // Empty row for separation
+          return;
+        }
         
         // Get all cells (header or data)
         const cells = headerCells.length > 0 ? headerCells : dataCells;
