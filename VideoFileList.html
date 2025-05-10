@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Video File List Generator</title>
+  <title>Video Library Manager</title>
   
   <style>
-    /* Arc-inspired base styles */
+    /* Arc-inspired base styles with green theme */
     * {
       margin: 0;
       padding: 0;
@@ -15,7 +15,7 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-      background-color: #fafafa; /* Arc's light gray background */
+      background-color: #f9fafb; /* Subtle green-tinted background */
       color: #1a1a1a;
       line-height: 1.5;
       padding: 40px 20px;
@@ -28,7 +28,7 @@
       margin: 0 auto;
     }
 
-    /* Arc-style header */
+    /* Arc-style header with green accents */
     .app-header {
       text-align: center;
       margin-bottom: 48px;
@@ -43,7 +43,7 @@
     }
 
     .app-subtitle {
-      color: #8e8e93;
+      color: #4b5563; /* Slightly warmer gray for green theme */
       font-size: 16px;
       font-weight: 400;
     }
@@ -55,7 +55,7 @@
       padding: 24px;
       margin-bottom: 24px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      border: 1px solid #e5e5e7;
+      border: 1px solid #e5e7eb; /* Subtle border */
     }
 
     .file-input-section {
@@ -65,13 +65,13 @@
     .section-title {
       font-size: 14px;
       font-weight: 500;
-      color: #48484a;
+      color: #374151; /* Darker gray for better contrast */
       margin-bottom: 12px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
-    /* Arc-style file input buttons */
+    /* Arc-style file input buttons with green theme */
     .file-inputs {
       display: flex;
       gap: 12px;
@@ -105,24 +105,24 @@
       border: 1px solid transparent;
     }
 
-    /* Files button - Arc's signature purple */
+    /* Files button - Primary green */
     .file-button label {
-      background-color: #8b5cf6;
+      background-color: #059669; /* Sophisticated sage green */
       color: white;
     }
 
     .file-button:hover label {
-      background-color: #7c3aed;
+      background-color: #047857; /* Slightly deeper on hover */
     }
 
-    /* Folders button - Complementary purple tone */
+    /* Folders button - Complementary green tone */
     .folder-button label {
-      background-color: #a78bfa;
+      background-color: #10b981; /* Slightly brighter variant */
       color: white;
     }
 
     .folder-button:hover label {
-      background-color: #8b5cf6;
+      background-color: #059669; /* Deepens to primary color */
     }
 
     /* Status and action buttons section */
@@ -134,11 +134,11 @@
     }
 
     .file-count {
-      color: #8e8e93;
+      color: #6b7280;
       font-size: 15px;
     }
 
-    /* Arc-style buttons */
+    /* Arc-style buttons with green theme */
     .btn {
       padding: 10px 20px;
       border-radius: 8px;
@@ -153,33 +153,33 @@
     }
 
     .btn-primary {
-      background-color: #8b5cf6;
+      background-color: #059669;
       color: white;
     }
 
     .btn-primary:hover {
-      background-color: #7c3aed;
+      background-color: #047857;
     }
 
     .btn-primary:disabled {
-      background-color: #e5e5e7;
-      color: #8e8e93;
+      background-color: #e5e7eb;
+      color: #9ca3af;
       cursor: not-allowed;
     }
 
     .btn-secondary {
-      background-color: #f5f5f7;
-      color: #48484a;
-      border: 1px solid #e5e5e7;
+      background-color: #f3f4f6; /* Slightly warm background */
+      color: #374151;
+      border: 1px solid #d1d5db;
     }
 
     .btn-secondary:hover {
-      background-color: #ebebed;
+      background-color: #e5e7eb;
     }
 
     /* Options toggles */
     .options-section {
-      border-top: 1px solid #e5e5e7;
+      border-top: 1px solid #e5e7eb;
       padding-top: 24px;
     }
 
@@ -200,7 +200,7 @@
     .option-toggle input[type="checkbox"] {
       width: 20px;
       height: 20px;
-      accent-color: #8b5cf6;
+      accent-color: #059669; /* Checkbox color matches theme */
       cursor: pointer;
     }
 
@@ -216,10 +216,10 @@
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      border: 1px solid #e5e5e7;
+      border: 1px solid #e5e7eb;
     }
 
-    /* Table styling */
+    /* Table styling with green accents */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -227,15 +227,15 @@
     }
 
     thead {
-      background-color: #fafafa;
-      border-bottom: 1px solid #e5e5e7;
+      background-color: #f9fafb; /* Very subtle green tint */
+      border-bottom: 1px solid #e5e7eb;
     }
 
     th {
       padding: 16px 20px;
       text-align: left;
       font-weight: 500;
-      color: #48484a;
+      color: #374151;
       font-size: 14px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -243,7 +243,7 @@
 
     td {
       padding: 16px 20px;
-      border-bottom: 1px solid #f5f5f7;
+      border-bottom: 1px solid #f3f4f6;
     }
 
     tr:last-child td {
@@ -251,21 +251,21 @@
     }
 
     tr:nth-child(even) {
-      background-color: #fafafa;
+      background-color: #f9fafb; /* Subtle striping */
     }
 
     tr:hover {
-      background-color: #f5f5f7;
+      background-color: #f0fdf4; /* Light green tint on hover */
     }
 
-    /* Folder header rows */
+    /* Folder header rows with green theme */
     .folder-header {
-      background-color: #8b5cf6 !important;
+      background-color: #059669 !important;
       color: white !important;
     }
 
     .folder-header:hover {
-      background-color: #7c3aed !important;
+      background-color: #047857 !important;
     }
 
     .folder-header td {
@@ -288,31 +288,32 @@
     }
 
     .export-button {
-      background-color: #f5f5f7;
-      color: #48484a;
-      border: 1px solid #e5e5e7;
+      background-color: #f3f4f6;
+      color: #374151;
+      border: 1px solid #d1d5db;
       display: inline-flex;
       align-items: center;
       gap: 8px;
     }
 
     .export-button:hover {
-      background-color: #ebebed;
+      background-color: #e5e7eb;
+      border-color: #9ca3af;
     }
 
     /* Loading states */
     .loading {
       text-align: center;
       padding: 40px 20px;
-      color: #8e8e93;
+      color: #6b7280;
       font-style: italic;
     }
 
-    /* Empty state */
+    /* Empty state with green accent */
     .empty-state {
       text-align: center;
       padding: 60px 20px;
-      color: #8e8e93;
+      color: #6b7280;
     }
 
     .empty-state-icon {
@@ -324,6 +325,21 @@
     .empty-state-text {
       font-size: 16px;
       line-height: 1.6;
+    }
+
+    /* Small decorative elements with green accent */
+    .decorative-accent {
+      position: relative;
+    }
+
+    .decorative-accent::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 60px;
+      height: 2px;
+      background: linear-gradient(90deg, #059669 0%, transparent 100%);
     }
 
     /* Responsive design */
@@ -361,7 +377,7 @@
       }
     }
 
-    /* Subtle animations */
+    /* Subtle animations with green theme */
     @keyframes fadeIn {
       from {
         opacity: 0;
@@ -376,14 +392,23 @@
     .file-list-container {
       animation: fadeIn 0.3s ease-out;
     }
+
+    /* Subtle green glow effect for interactive elements */
+    .btn-primary:focus {
+      box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+    }
+
+    .custom-file-input label:focus-within {
+      box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+    }
   </style>
 </head>
 
 <body>
   <div class="app-container">
     <header class="app-header">
-      <h1>Video Library Manager</h1>
-      <p class="app-subtitle">Organize and analyze your video files with ease</p>
+      <h1 class="decorative-accent">Video Library Manager</h1>
+      <p class="app-subtitle">Organize and analyze your video files with elegance</p>
     </header>
 
     <div class="control-card">
@@ -475,7 +500,7 @@
       const fileListDiv = document.getElementById('fileList');
       fileListDiv.innerHTML = `
         <div class="empty-state">
-          <div class="empty-state-icon">📼</div>
+          <div class="empty-state-icon">🎬</div>
           <div class="empty-state-text">Select video files or folders to get started.<br>Your organized file list will appear here.</div>
         </div>
       `;
@@ -640,7 +665,7 @@
       loadingCell.textContent = 'Processing video metadata...';
       loadingCell.style.textAlign = 'center';
       loadingCell.style.fontStyle = 'italic';
-      loadingCell.style.color = '#8e8e93';
+      loadingCell.style.color = '#6b7280';
       loadingRow.appendChild(loadingCell);
       tableBody.appendChild(loadingRow);
 
@@ -836,6 +861,7 @@
               text-align: center;
               margin-bottom: 40px;
               font-weight: 400;
+              color: #059669;
             }
             table {
               width: 100%;
@@ -843,26 +869,26 @@
               margin-bottom: 40px;
             }
             th {
-              background-color: #fafafa;
+              background-color: #f9fafb;
               padding: 12px 16px;
               text-align: left;
               font-weight: 500;
-              color: #48484a;
-              border-bottom: 1px solid #e5e5e7;
+              color: #374151;
+              border-bottom: 1px solid #e5e7eb;
             }
             td {
               padding: 12px 16px;
-              border-bottom: 1px solid #f5f5f7;
+              border-bottom: 1px solid #f3f4f6;
             }
             .folder-header {
-              background-color: #8b5cf6 !important;
+              background-color: #059669 !important;
               color: white !important;
               font-weight: 500;
             }
             .footer {
               margin-top: 40px;
               text-align: center;
-              color: #8e8e93;
+              color: #6b7280;
               font-size: 14px;
             }
           </style>
